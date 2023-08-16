@@ -11,16 +11,16 @@ def printPaddedInBox(string, boxChar, padding=2):
 
 
 def printInFancyBox(msg, indent=1, width=None, title=None):
-    lines = msg.split('\n')
+    lines = msg.split("\n")
     space = " " * indent
     if not width:
         width = max(map(len, lines))
 
     box = f'╔{"═" * (width + indent * 2)}╗\n'  # upper_border
     if title:
-        box += f'║{space}{title:<{width}}{space}║\n'  # title
+        box += f"║{space}{title:<{width}}{space}║\n"  # title
         box += f'║{space}{"-" * len(title):<{width}}{space}║\n'  # underscore
-    box += ''.join([f'║{space}{line:^{width}}{space}║\n' for line in lines])
+    box += "".join([f"║{space}{line:^{width}}{space}║\n" for line in lines])
     box += f'╚{"═" * (width + indent * 2)}╝'  # lower_border
     print(box)
 
@@ -29,11 +29,11 @@ def borderedText(lines):
     if type(lines) == str:
         lines = lines.splitlines()
     width = max(len(line) for line in lines)
-    result = ['┌' + '─' * width + '┐']
+    result = ["┌" + "─" * width + "┐"]
     for line in lines:
-        result.append('│' + (line + ' ' * width)[:width] + '│')
-    result.append('└' + '─' * width + '┘')
-    text = '\n'.join(result)
+        result.append("│" + (line + " " * width)[:width] + "│")
+    result.append("└" + "─" * width + "┘")
+    text = "\n".join(result)
 
     print(text)
 
@@ -44,11 +44,12 @@ def padAndCentreLine(line, width):
     padding = padding // 2
     print("~" * padding + " " + line + " " + "~" * padding)
 
-def printWithSeperators(lines,sepChar):
+
+def printWithSeperators(lines, sepChar):
     lines = lines.splitlines()
     print("\n")
     width = max(map(len, lines))
-    print(sepChar*width)
+    print(sepChar * width)
     for line in lines:
         print(line)
-    print(sepChar*width,end="\n\n")
+    print(sepChar * width, end="\n\n")

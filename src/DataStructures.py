@@ -1,4 +1,4 @@
-#uses Linked List structure
+# uses Linked List structure
 class Queue:
     class Node:
         def __init__(self, data):
@@ -42,8 +42,8 @@ class Queue:
     def isEmpty(self):
         return self.size == 0
 
-class CircularLinkedList:
 
+class CircularLinkedList:
     class Node:
         def __init__(self, data):
             self.data = data
@@ -54,7 +54,7 @@ class CircularLinkedList:
         self.tail = None
         self.length = 0
 
-    def insertHead(self,data):
+    def insertHead(self, data):
         node = CircularLinkedList.Node(data)
         self.length += 1
         if not self.head:
@@ -68,7 +68,7 @@ class CircularLinkedList:
 
         self.tail.next = node
 
-    def insertTail(self,data):
+    def insertTail(self, data):
         node = CircularLinkedList.Node(data)
         self.length += 1
         if not self.tail:
@@ -86,7 +86,6 @@ class CircularLinkedList:
 
         if not self.head:
             return dataList
-
 
         else:
 
@@ -120,7 +119,7 @@ class CircularLinkedList:
 
             return dataSet
 
-    def search(self,target,start=None, end=None, key=lambda x:x):
+    def search(self, target, start=None, end=None, key=lambda x: x):
         if not self.head:
             return None
         if not start:
@@ -130,7 +129,6 @@ class CircularLinkedList:
 
         if not end:
             end = start
-
 
         while True:
 
@@ -142,9 +140,7 @@ class CircularLinkedList:
                 if current == end:
                     return None
 
-
-
-    def deleteNode(self,target,key=lambda x:x):
+    def deleteNode(self, target, key=lambda x: x):
         if not self.head:
             return False
 

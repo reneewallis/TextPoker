@@ -1,14 +1,15 @@
-import itertools, random, time,os
+import itertools, random, time, os
 import StringFormatting
 from DataStructures import Queue, CircularLinkedList
 
 CURRENT_DIR = os.getcwd()
-PLAYER_DIR = os.path.join(CURRENT_DIR,"Player_Hands")
+PLAYER_DIR = os.path.join(CURRENT_DIR, "Player_Hands")
+
 
 class Card:
 
-    RANK = {"2", "3", "4" , "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"}
-    ROYALS = {"Jack":11, "Queen":12, "King":13, "Ace":14}
+    RANK = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"}
+    ROYALS = {"Jack": 11, "Queen": 12, "King": 13, "Ace": 14}
     SUITS = {"Diamonds", "Spades", "Hearts", "Clubs"}
 
     def __init__(self, rank, suit):
@@ -41,17 +42,20 @@ class Card:
         return self.rank + " of " + self.suit
 
     def __eq__(self, other):
-        return isinstance(other, Card) and (self.rank == other.rank and self.suit == other.suit)
+        return isinstance(other, Card) and (
+            self.rank == other.rank and self.suit == other.suit
+        )
 
     def __hash__(self):
         return hash((self.rank, self.suit))
 
 
 class Deck:
-
     def __init__(self, numberOfDecks):
         deck = itertools.product(Card.RANK, Card.SUITS)
-        self.cards = [Card(rank,suit) for (rank,suit) in deck for _ in range(numberOfDecks)]
+        self.cards = [
+            Card(rank, suit) for (rank, suit) in deck for _ in range(numberOfDecks)
+        ]
 
     def shuffle(self):
         random.shuffle(self.cards)
@@ -67,7 +71,7 @@ class Deck:
 
 
 class Player:
-    def __init__(self,name):
+    def __init__(self, name):
         self.money = 100
         self.name = name
         self.currentBet = 0
@@ -80,20 +84,20 @@ class Player:
         self.kickers = []
         self.handRank = 0
 
-    def getCardHand(self,index):
+    def getCardHand(self, index):
         return self.hand[index]
 
-    def getKicker(self,index):
+    def getKicker(self, index):
         return self.kickers[index]
 
     def addCard(self, card):
         self.hole.append(card)
         self.hand.append(card)
 
-    def addToHand(self,cards):
+    def addToHand(self, cards):
         self.hand.extend(cards)
 
-    def setHand(self,cards):
+    def setHand(self, cards):
         self.hand = cards
 
     def resetRound(self):
@@ -107,9 +111,8 @@ class Player:
         self.kickers = []
         self.handRank = 0
 
-
-    def call(self,stake):
-        total = stake-self.currentBet
+    def call(self, stake):
+        total = stake - self.currentBet
         self.money -= total
         self.currentBet = stake
         self.currentPotContrib += total
@@ -140,16 +143,15 @@ class Player:
 
         return self.currentBet
 
-
     def fold(self):
         self.folded = True
 
-    def getValidChoices(self, stake,lastRaise,minBet):
+    def getValidChoices(self, stake, lastRaise, minBet):
         choices = set()
-        if self.money - (stake-self.currentBet) > 0:
+        if self.money - (stake - self.currentBet) > 0:
             if self.currentBet < stake:
                 choices.add("call")
-                if self.money - max(minBet,((2*lastRaise))) > 0:
+                if self.money - max(minBet, ((2 * lastRaise))) > 0:
                     choices.add("raise")
 
             else:
@@ -172,11 +174,15 @@ class Player:
         else:
             stringRaiseOrBet = "bet"
 
-        StringFormatting.printWithSeperators("type back at any time if you no longer want to " + stringRaiseOrBet,"*")
+        StringFormatting.printWithSeperators(
+            "type back at any time if you no longer want to " + stringRaiseOrBet, "*"
+        )
         while not raisedBet:
             if raising:
                 print("enter the amount you would like to raise to")
-            amount = input("how much would you like to "+stringRaiseOrBet + " ").strip()
+            amount = input(
+                "how much would you like to " + stringRaiseOrBet + " "
+            ).strip()
 
             if amount == "back":
                 break
@@ -186,52 +192,86 @@ class Player:
                     print("You cannot " + stringRaiseOrBet + " a negative amount!")
                     continue
 
-                elif amount < stake+(2*lastRaise):
-                    print("You must raise by a minimum of double the last raise or bet (min " + str(2*lastRaise) + " chips) which takes the bet to " + str(stake+(2*lastRaise)) + " chips")
+                elif amount < stake + (2 * lastRaise):
+                    print(
+                        "You must raise by a minimum of double the last raise or bet (min "
+                        + str(2 * lastRaise)
+                        + " chips) which takes the bet to "
+                        + str(stake + (2 * lastRaise))
+                        + " chips"
+                    )
 
                 elif amount < minBet:
-                    print("You cannot " + stringRaiseOrBet + " less than the minimum bet which is " + str(minBet) + " chips")
+                    print(
+                        "You cannot "
+                        + stringRaiseOrBet
+                        + " less than the minimum bet which is "
+                        + str(minBet)
+                        + " chips"
+                    )
 
                 elif raising and amount == stake:
-                    print("You must raise by at least " + str(max(minBet,(2*lastRaise))) + " which takes the bet to " + str(stake + max(minBet,(2*lastRaise))) + " chips")
+                    print(
+                        "You must raise by at least "
+                        + str(max(minBet, (2 * lastRaise)))
+                        + " which takes the bet to "
+                        + str(stake + max(minBet, (2 * lastRaise)))
+                        + " chips"
+                    )
 
                 else:
                     if raising:
-                        increase = amount-self.currentBet
+                        increase = amount - self.currentBet
                     else:
                         increase = amount
 
                     raisedBet = self.raiseOrBet(increase)
 
                     if not raisedBet:
-                        print("Sorry but you don\'t have enough money!")
+                        print("Sorry but you don't have enough money!")
 
                     else:
                         raisedBet -= stake
 
             except ValueError:
-                print("I\'m sorry, you didn\'t enter a number")
+                print("I'm sorry, you didn't enter a number")
 
-        return raisedBet,increase
+        return raisedBet, increase
 
-    def playTurn(self,stake,lastRaise,minBet):
-        valid = self.getValidChoices(stake,lastRaise,minBet)
+    def playTurn(self, stake, lastRaise, minBet):
+        valid = self.getValidChoices(stake, lastRaise, minBet)
         played = False
         total = 0
         raisedBet = None
-        infoString = self.name + "\'s chips: " + str(self.money) +"\npot contribution: " + str(self.totalPotContrib) +"\ntables bet: " + str(stake) + "\nyour current bet: " + str(self.currentBet)
+        infoString = (
+            self.name
+            + "'s chips: "
+            + str(self.money)
+            + "\npot contribution: "
+            + str(self.totalPotContrib)
+            + "\ntables bet: "
+            + str(stake)
+            + "\nyour current bet: "
+            + str(self.currentBet)
+        )
         while not played:
-            StringFormatting.printWithSeperators(infoString,"*")
-            choice = input(self.name + " would you like to: " + ", ".join(valid) + " ").lower().strip()
+            StringFormatting.printWithSeperators(infoString, "*")
+            choice = (
+                input(self.name + " would you like to: " + ", ".join(valid) + " ")
+                .lower()
+                .strip()
+            )
             if choice in valid:
 
                 if choice == "raise":
-                    raisedBet,total = self.validateRaiseBet(minBet, lastRaise, stake)
+                    raisedBet, total = self.validateRaiseBet(minBet, lastRaise, stake)
 
                     print("raised by " + str(raisedBet))
 
                 elif choice == "bet":
-                    raisedBet,total = self.validateRaiseBet(minBet, lastRaise, stake, False)
+                    raisedBet, total = self.validateRaiseBet(
+                        minBet, lastRaise, stake, False
+                    )
 
                 elif choice == "check":
                     played = True
@@ -250,7 +290,6 @@ class Player:
                     total = -1
                     self.currentBet = total
 
-
                 if total:
                     played = True
 
@@ -261,16 +300,14 @@ class Player:
                         print("You are all in")
 
             else:
-                print("I\'m sorry, that choice wasn't on the list!", end="")
+                print("I'm sorry, that choice wasn't on the list!", end="")
                 time.sleep(0.4)
 
-
-        return total,lastRaise
-
-
+        return total, lastRaise
 
     def __repr__(self):
         return self.name
+
 
 class Pot:
     def __init__(self, total, players):
@@ -288,9 +325,10 @@ class Pot:
             chipsLeft += player.currentPotContrib
             self.total += lowestBet
 
-
         if chipsLeft != 0:
-            playersInNextPot = [player for player in self.players if player.currentPotContrib > 0]
+            playersInNextPot = [
+                player for player in self.players if player.currentPotContrib > 0
+            ]
 
             return Pot(0, playersInNextPot)
 
@@ -298,18 +336,32 @@ class Pot:
             return None
 
 
-#class requires classes CircularLinkedList, StringFormatting, Player, Card and Deck
+# class requires classes CircularLinkedList, StringFormatting, Player, Card and Deck
 class Poker:
-    HAND_RANKS = {1:"Royal Flush", 2:"Straight Flush", 3:"Four Of A Kind", 4:"Full House", 5:"Flush", 6:"Straight", 7:"Three Of A Kind", 8:"Two Pair", 9:"Pair", 10:"High Card"}
-    def __init__(self,minBet=0,numberOfDecks=2,players=None):
+    HAND_RANKS = {
+        1: "Royal Flush",
+        2: "Straight Flush",
+        3: "Four Of A Kind",
+        4: "Full House",
+        5: "Flush",
+        6: "Straight",
+        7: "Three Of A Kind",
+        8: "Two Pair",
+        9: "Pair",
+        10: "High Card",
+    }
+
+    def __init__(self, minBet=0, numberOfDecks=2, players=None):
         self.phase = 0
         self.community = []
         self.activePlayers = None
-        self.deck = Deck(numberOfDecks) #Game deck normally consits of 2 standard Decks
+        self.deck = Deck(
+            numberOfDecks
+        )  # Game deck normally consits of 2 standard Decks
         self.minBet = minBet
         self.pots = Queue()
 
-        #Allows you to skip initiation
+        # Allows you to skip initiation
         if players:
             self.players = players
         else:
@@ -317,42 +369,49 @@ class Poker:
 
         self.initiate()
 
-    def addPlayer(self,player):
+    def addPlayer(self, player):
         self.players.append(player)
         print("Hello " + player.name)
 
-    def removePlayer(self,player):
+    def removePlayer(self, player):
         self.players.remove(player)
-        print(player.name +" is out!")
+        print(player.name + " is out!")
         try:
             os.remove(os.path.join(PLAYER_DIR, player.name + ".txt"))
 
         except Exception as e:
             print("couldn't delete player file: ", e)
 
-    #get new is false when the function is used to ensure player numbers are valid
-    def getNewPlayers(self,getNew=True):
+    # get new is false when the function is used to ensure player numbers are valid
+    def getNewPlayers(self, getNew=True):
 
         if getNew and len(self.players) < 6:
-            playerCheck = lambda x : x <= len(self.players)
+            playerCheck = lambda x: x <= len(self.players)
         else:
             playerCheck = lambda x: x < len(self.players)
 
         numberOfPlayers = len(self.players)
 
-        while numberOfPlayers < 2 or numberOfPlayers > 6 or playerCheck(numberOfPlayers):
+        while (
+            numberOfPlayers < 2 or numberOfPlayers > 6 or playerCheck(numberOfPlayers)
+        ):
             try:
-                numberOfPlayers = int(input("How many players will be playing in total? ").strip())
+                numberOfPlayers = int(
+                    input("How many players will be playing in total? ").strip()
+                )
                 if numberOfPlayers < 2:
                     print("You need at least 2 players to play poker!")
                 if numberOfPlayers > 6:
                     print("There are only 6 seats available in Text Poker!")
                 if numberOfPlayers < len(self.players):
-                    print("There are " + str(
-                        len(self.players)) + " players currently, include the current players in the total")
+                    print(
+                        "There are "
+                        + str(len(self.players))
+                        + " players currently, include the current players in the total"
+                    )
 
             except ValueError:
-                print("I\'m sorry, you didn\'t enter a number!")
+                print("I'm sorry, you didn't enter a number!")
 
         # if players need to be created
         if len(self.players) != numberOfPlayers:
@@ -362,7 +421,7 @@ class Poker:
                 while not valid:
                     playerName = input("Enter a Player Name: ").strip()
                     if playerName in playerNames:
-                        print("I\'m sorry, that name is taken!")
+                        print("I'm sorry, that name is taken!")
                     else:
                         valid = True
                         playerNames.add(playerName)
@@ -376,18 +435,25 @@ class Poker:
         # set min bet and big blind condition is for compile error
         maxBet = min([player.money for player in self.players])
         while self.minBet <= 0 or self.minBet > maxBet:
-           try:
-               print("Note, the big blind value is also the minimum bet")
-               self.minBet = int(input("How many chips would you like to set the big blind at? ").strip())
-               if self.minBet <= 0:
-                   print("The big blind must cost some amount of chips!")
-               elif self.minBet > maxBet:
-                   print("Some of the players don\'t have enough money for that! Try anything below "+ str(maxBet)+ " chips")
-           except ValueError:
-               print("I\'m sorry, you didn\'t enter a number!")
+            try:
+                print("Note, the big blind value is also the minimum bet")
+                self.minBet = int(
+                    input(
+                        "How many chips would you like to set the big blind at? "
+                    ).strip()
+                )
+                if self.minBet <= 0:
+                    print("The big blind must cost some amount of chips!")
+                elif self.minBet > maxBet:
+                    print(
+                        "Some of the players don't have enough money for that! Try anything below "
+                        + str(maxBet)
+                        + " chips"
+                    )
+            except ValueError:
+                print("I'm sorry, you didn't enter a number!")
 
-
-        #clear all previous games files
+        # clear all previous games files
         if not os.path.isdir(PLAYER_DIR):
             os.mkdir(PLAYER_DIR)
         else:
@@ -398,8 +464,6 @@ class Poker:
             except Exception as e:
                 print("couldn't delete files because ", e)
 
-
-
     def checkActivePlayers(self):
         i = len(self.players) - 1
         while i >= 0:
@@ -407,7 +471,7 @@ class Poker:
             player.resetRound()
             if not player.money:
                 self.removePlayer(player)
-            i-=1
+            i -= 1
 
         return len(self.players) > 1
 
@@ -416,7 +480,7 @@ class Poker:
             self.activePlayers = CircularLinkedList()
             for player in self.players:
                 self.activePlayers.insertTail(player)
-                self.clearFile(os.path.join(PLAYER_DIR,player.name + ".txt"))
+                self.clearFile(os.path.join(PLAYER_DIR, player.name + ".txt"))
                 player.resetRound()
         else:
             return False
@@ -435,8 +499,11 @@ class Poker:
 
             cardsInPlay.append(self.deck.dealCard())
             self.players[j].addCard(cardsInPlay[i])
-            self.writeToFile(os.path.join(PLAYER_DIR,self.players[j].name+".txt"), str(cardsInPlay[i]))
-            j+=1
+            self.writeToFile(
+                os.path.join(PLAYER_DIR, self.players[j].name + ".txt"),
+                str(cardsInPlay[i]),
+            )
+            j += 1
 
         self.community = [self.deck.dealCard() for _ in range(5)]
 
@@ -445,19 +512,20 @@ class Poker:
         self.phase = 1
 
         return True
+
     def rotateBlinds(self):
         self.players.append(self.players.pop(0))
 
-    def writeToFile(self,filename,lines):
+    def writeToFile(self, filename, lines):
         lines = lines.splitlines()
-        with open(filename,"a") as file:
+        with open(filename, "a") as file:
             for line in lines:
-                file.write(line+"\n")
+                file.write(line + "\n")
 
-    def clearFile(self,filename):
-        open(filename,"w").close()
+    def clearFile(self, filename):
+        open(filename, "w").close()
 
-    #want to limit print statements to play and play turn function to allow code reusability
+    # want to limit print statements to play and play turn function to allow code reusability
     def play(self):
 
         while self.deal():
@@ -465,12 +533,12 @@ class Poker:
             button = self.activePlayers.tail
             smallBlind = button.next
             bigBlind = smallBlind.next
-            currentPot = Pot(0,self.players)
+            currentPot = Pot(0, self.players)
             self.pots.enqueue(currentPot)
 
             print("button: " + button.data.name)
-            print("big blind: "+bigBlind.data.name)
-            print("small blind: "+smallBlind.data.name)
+            print("big blind: " + bigBlind.data.name)
+            print("small blind: " + smallBlind.data.name)
 
             bigBlind.data.raiseOrBet(self.minBet)
             smallBlind.data.raiseOrBet(self.minBet // 2)
@@ -501,11 +569,10 @@ class Poker:
                     self.pots.enqueue(currentPot)
                     nextPot = nextPot.addChipsToPot()
 
-
                 if self.phase < 5:
                     turnedCards.append(self.community[self.phase])
-                    communityString=", ".join([str(card) for card in turnedCards])
-                    StringFormatting.printPaddedInBox(communityString,"=")
+                    communityString = ", ".join([str(card) for card in turnedCards])
+                    StringFormatting.printPaddedInBox(communityString, "=")
                     time.sleep(1)
 
             if self.phase == 5:
@@ -515,13 +582,12 @@ class Poker:
                 while True:
 
                     holeStrings = [str(card) for card in current.data.hole]
-                    width = len(max(holeStrings,key=lambda x: len(x)))
-                    StringFormatting.padAndCentreLine(current.data.name,width)
+                    width = len(max(holeStrings, key=lambda x: len(x)))
+                    StringFormatting.padAndCentreLine(current.data.name, width)
                     StringFormatting.borderedText(holeStrings)
                     current = current.next
                     if current == self.activePlayers.head:
                         break
-
 
                 time.sleep(2)
 
@@ -534,18 +600,29 @@ class Poker:
 
                 while not self.pots.isEmpty():
                     currentPot = self.pots.dequeue()
-                    playersInPot = [player for player in currentPot.players if player in activePlayersSet]
-                    potName = "Main Pot" if potNumber == 0 else "Side Pot " + str(potNumber)
-
+                    playersInPot = [
+                        player
+                        for player in currentPot.players
+                        if player in activePlayersSet
+                    ]
+                    potName = (
+                        "Main Pot" if potNumber == 0 else "Side Pot " + str(potNumber)
+                    )
 
                     if len(playersInPot) == 1:
                         lastPotValue += currentPot.total
 
                     else:
 
-                        winners = self.findWinner(playersInPot,HandFound)
-                        text = "~" + potName + "~" + "\nWinning Hand: " + Poker.HAND_RANKS[winners[0].handRank]
-                        StringFormatting.printInFancyBox(text,10)
+                        winners = self.findWinner(playersInPot, HandFound)
+                        text = (
+                            "~"
+                            + potName
+                            + "~"
+                            + "\nWinning Hand: "
+                            + Poker.HAND_RANKS[winners[0].handRank]
+                        )
+                        StringFormatting.printInFancyBox(text, 10)
 
                         potNumber += 1
 
@@ -555,24 +632,43 @@ class Poker:
                         if len(winners) == 1:
                             self.printPlayersHand(winners[0])
                             winners[0].money += currentPot.total
-                            print(winners[0].name + " wins " + str(currentPot.total) + " chips!")
+                            print(
+                                winners[0].name
+                                + " wins "
+                                + str(currentPot.total)
+                                + " chips!"
+                            )
 
                         else:
-                            split,extraChipsAwardee,extraChips = self.splitPot(winners,currentPot.total)
+                            split, extraChipsAwardee, extraChips = self.splitPot(winners, currentPot.total)
 
-                            print("pot split " + str(len(winners)) + " ways for a win of " + str(split) + " chips each")
+                            print(
+                                "pot split "
+                                + str(len(winners))
+                                + " ways for a win of "
+                                + str(split)
+                                + " chips each"
+                            )
                             print("winning hands:")
                             for winner in winners:
                                 self.printPlayersHand(winner)
 
                             if extraChipsAwardee:
-                                print("\nWith " + str(extraChips) + " extra chips awarded to the player to the left of the dealer, " + str(extraChipsAwardee.name))
+                                print(
+                                    "\nWith "
+                                    + str(extraChips)
+                                    + " extra chips awarded to the player to the left of the dealer, "
+                                    + str(extraChipsAwardee.name)
+                                )
                         time.sleep(2)
 
-
                 if lastPotValue:
-                    StringFormatting.printInFancyBox("~" + potName + "~" + "\nOne Player Left In Pot")
-                    print(playersInPot[0].name + " wins " + str(lastPotValue) + " chips")
+                    StringFormatting.printInFancyBox(
+                        "~" + potName + "~" + "\nOne Player Left In Pot"
+                    )
+                    print(
+                        playersInPot[0].name + " wins " + str(lastPotValue) + " chips"
+                    )
                     playersInPot[0].money += lastPotValue
 
             else:
@@ -583,9 +679,8 @@ class Poker:
 
                 player = self.activePlayers.head.data
                 player.money += total
-                StringFormatting.printInFancyBox("~Main Pot~",10)
+                StringFormatting.printInFancyBox("~Main Pot~", 10)
                 print(player.name + " wins " + str(total) + " chips!")
-
 
             self.rotateBlinds()
             print("~~~~~~~~~~~~~~~~~~~~")
@@ -594,9 +689,10 @@ class Poker:
             if len(self.players) < 6:
                 answer = None
 
-
                 while not (answer == "y" or answer == "n"):
-                    answer = input("would you like to add more players y/n ").lower().strip()
+                    answer = (
+                        input("would you like to add more players y/n ").lower().strip()
+                    )
                     if not (answer == "y" or answer == "n"):
                         print("Invalid input, type y/n")
 
@@ -608,20 +704,19 @@ class Poker:
             time.sleep(1)
 
         winner = self.players[0]
-        StringFormatting.printInFancyBox(winner.name + " wins the game with " + str(winner.money) + " chips!")
+        StringFormatting.printInFancyBox(
+            winner.name + " wins the game with " + str(winner.money) + " chips!"
+        )
 
-
-
-    def printPlayersHand(self,player):
-        print(player.name +"'s hand > ",end="")
-        print(", ".join([str(card) for card in player.hand]),end="")
+    def printPlayersHand(self, player):
+        print(player.name + "'s hand > ", end="")
+        print(", ".join([str(card) for card in player.hand]), end="")
         if player.kickers:
             print(", " + ", ".join([str(card) for card in player.kickers]))
         else:
-            print("\n",end="")
+            print("\n", end="")
 
-
-    def splitPot(self,winners,potValue):
+    def splitPot(self, winners, potValue):
         n = len(winners)
         split = potValue // n
 
@@ -637,13 +732,12 @@ class Poker:
                 nextToButton = nextToButton.next
             nextToButton.money += extraChips
 
-            return split,nextToButton,extraChips
+            return split, nextToButton, extraChips
 
         else:
-            return split,None,None
+            return split, None, None
 
-
-    def bettingRound(self,nodeToStart=None,stake=0):
+    def bettingRound(self, nodeToStart=None, stake=0):
 
         if nodeToStart:
             node = nodeToStart
@@ -656,22 +750,41 @@ class Poker:
         start = True
         lastRaise = 0
 
-        #While loop conditionals for readability
-        notFinishedLoop = lambda currentNode : currentNode != nodeToStart
-        betNotChanged = lambda currentStake : currentStake == startBet
-        playerNotMetBet = lambda currentPlayer,currentStake : currentPlayer.currentBet != currentStake
-        multiplePlayersCanPlay = lambda firstNodeNotAllIn: firstNodeNotAllIn != firstNotAllIn(firstNodeNotAllIn.next) if firstNodeNotAllIn else False
+        # While loop conditionals for readability
+        notFinishedLoop = lambda currentNode: currentNode != nodeToStart
+        betNotChanged = lambda currentStake: currentStake == startBet
+        playerNotMetBet = (
+            lambda currentPlayer, currentStake: currentPlayer.currentBet != currentStake
+        )
+        multiplePlayersCanPlay = (
+            lambda firstNodeNotAllIn: firstNodeNotAllIn
+            != firstNotAllIn(firstNodeNotAllIn.next)
+            if firstNodeNotAllIn
+            else False
+        )
 
         # find the first not all in player
-        firstNotAllIn = lambda startNode: self.activePlayers.search(False, start=startNode, key=lambda x: x.isAllIn)
+        firstNotAllIn = lambda startNode: self.activePlayers.search(
+            False, start=startNode, key=lambda x: x.isAllIn
+        )
 
         firstNodeCanPlay = firstNotAllIn(nodeToStart)
 
-
-        while self.activePlayers.length > 1 and (multiplePlayersCanPlay(firstNodeCanPlay) or playerNotMetBet(player,stake)) and (start or playerNotMetBet(player,stake) or (notFinishedLoop(node) and (betNotChanged(stake) or player.isAllIn))):
+        while (
+            self.activePlayers.length > 1
+            and (
+                multiplePlayersCanPlay(firstNodeCanPlay)
+                or playerNotMetBet(player, stake)
+            )
+            and (
+                start
+                or playerNotMetBet(player, stake)
+                or (notFinishedLoop(node) and (betNotChanged(stake) or player.isAllIn))
+            )
+        ):
 
             if not player.isAllIn:
-                bet, lastRaise = player.playTurn(stake,lastRaise,self.minBet)
+                bet, lastRaise = player.playTurn(stake, lastRaise, self.minBet)
 
                 if player.currentBet > stake:
                     stake = player.currentBet
@@ -687,15 +800,14 @@ class Poker:
                         print("hi")
                         self.removePlayer(player)
 
-            if start and not (player.folded or player.currentBet == -1) :
+            if start and not (player.folded or player.currentBet == -1):
                 start = False
-
 
             node = node.next
             player = node.data
             time.sleep(0.5)
 
-        #reset current bets at end of round
+        # reset current bets at end of round
         if self.activePlayers.length > 1 and player.currentBet != 0:
             node = self.activePlayers.head
             player = node.data
@@ -710,56 +822,70 @@ class Poker:
         self.phase += 1
         return
 
-    def findWinner(self,playersInHand=None,HandFound=False):
+    def findWinner(self, playersInHand=None, HandFound=False):
         if not playersInHand:
             playersInHand = self.activePlayers.getList()
         for player in playersInHand:
             if not HandFound:
                 player.addToHand(self.community)
                 self.mergeSort(player.hand, Card.getValue)
-                player.handRank, player.hand, player.kickers = self.getHandRank(player.hand)
+                player.handRank, player.hand, player.kickers = self.getHandRank(
+                    player.hand
+                )
 
-
-        self.mergeSort(playersInHand,lambda x: x.handRank)
-        winners = [player for player in playersInHand if player.handRank == playersInHand[0].handRank]
+        self.mergeSort(playersInHand, lambda x: x.handRank)
+        winners = [
+            player
+            for player in playersInHand
+            if player.handRank == playersInHand[0].handRank
+        ]
 
         if len(winners) >= 2:
-            winners = Poker.findBiggestHand(winners,lambda i : lambda x: x.getCardHand(i).value,len(winners[0].hand))
+            winners = Poker.findBiggestHand(
+                winners,
+                lambda i: lambda x: x.getCardHand(i).value,
+                len(winners[0].hand),
+            )
 
             if len(winners) > 1 and winners[0].kickers:
-                winners = Poker.findBiggestHand(winners,lambda i: lambda x:x.getKicker(i).value,len(winners[0].kickers))
+                winners = Poker.findBiggestHand(
+                    winners,
+                    lambda i: lambda x: x.getKicker(i).value,
+                    len(winners[0].kickers),
+                )
 
         return winners
 
     @staticmethod
-    def findBiggestHand(players, closuredGetFunc ,handLength):
+    def findBiggestHand(players, closuredGetFunc, handLength):
         for i in range(handLength):
             getCard = closuredGetFunc(i)
             biggest = max(players, key=getCard)
-            players = [player for player in players if getCard(player) == getCard(biggest)]
+            players = [
+                player for player in players if getCard(player) == getCard(biggest)
+            ]
             if len(players) == 1:
                 break
         return players
 
-    def checkStraight(self,values):
+    def checkStraight(self, values):
         count = 1
         highestIndex = None
         startIndex = 0
         aceLow = False
 
-        #if low ace straight possible
+        # if low ace straight possible
         if values[-1] == 14 and values[0] == 2:
             values = [1] + values
             aceLow = True
 
-
-        for i in range(1,len(values)):
-            if values[i] == values[i-1] +1:
+        for i in range(1, len(values)):
+            if values[i] == values[i - 1] + 1:
                 count += 1
                 if count >= 5:
                     highestIndex = i
 
-            elif values[i] == values[i-1]:
+            elif values[i] == values[i - 1]:
                 if count >= 5:
                     highestIndex = i
                 else:
@@ -772,38 +898,35 @@ class Poker:
                 count = 1
                 startIndex = i
 
-        #because 1 is added to front
+        # because 1 is added to front
         if aceLow and highestIndex:
             startIndex -= 1
             highestIndex -= 1
 
+        return startIndex, highestIndex
 
-        return startIndex,highestIndex
-
-    def checkStraightFlush(self,straight):
-        #boundary is 3 of a kind of different suits and then a straight flush
+    def checkStraightFlush(self, straight):
+        # boundary is 3 of a kind of different suits and then a straight flush
         extraSuit = {}
         suit = straight[0].suit
         straightFlush = [straight[0]]
 
-
-        for i in range(1,len(straight)):
-            if straight[i] == straight[i-1]:
+        for i in range(1, len(straight)):
+            if straight[i] == straight[i - 1]:
                 continue
             elif straight[i].suit == suit:
                 straightFlush.append(straight[i])
 
             elif i > 3:
-                    break
+                break
 
             elif straight[i].suit in extraSuit:
                 suit = straight[i].suit
-                straightFlush = [extraSuit[straight[i].suit],straight[i]]
+                straightFlush = [extraSuit[straight[i].suit], straight[i]]
                 extraSuit = {}
 
-            elif straight[i].value == straight[i-1].value:
+            elif straight[i].value == straight[i - 1].value:
                 extraSuit[straight[i].suit] = straight[i]
-
 
             else:
                 straightFlush = [straight[i]]
@@ -814,58 +937,60 @@ class Poker:
         else:
             return None
 
-    #returns rank, [cardsInHand], [kicker(s)] > first card is highest
+    # returns rank, [cardsInHand], [kicker(s)] > first card is highest
     def getHandRank(self, cards):
         values = [card.value for card in cards]
-        findKickers = lambda x,amount: [card for card in cards if card not in x][:-amount-1:-1]
+        findKickers = lambda x, amount: [card for card in cards if card not in x][
+            : -amount - 1 : -1
+        ]
         rank = None
         kickers = None
-        straightStart,straightEnd = self.checkStraight(values)
+        straightStart, straightEnd = self.checkStraight(values)
 
-        #straight
+        # straight
         straight = None
         if straightEnd:
             rank = 6
 
-            #get array of straight cards, reorder if ace low
+            # get array of straight cards, reorder if ace low
             if straightStart == -1:
                 straightStart = 0
                 if straightEnd == 3:
-                    #boundary is 3 Aces and a straight high 5 [2H,3H,4H,5H,AH,AC,AS]
+                    # boundary is 3 Aces and a straight high 5 [2H,3H,4H,5H,AH,AC,AS]
                     straight = []
                     i = 6
-                    while i>=4 and cards[i].value == 14:
+                    while i >= 4 and cards[i].value == 14:
                         cards[i].value = 1
                         straight.append(cards[i])
-                        i-=1
+                        i -= 1
 
                     for i in range(4):
                         straight.append(cards[i])
 
             if not straight:
-                straight = cards[straightStart:straightEnd+1]
+                straight = cards[straightStart : straightEnd + 1]
 
             straightFlush = self.checkStraightFlush(straight)
 
-
             if straightFlush:
 
-                #royal flush
+                # royal flush
                 if straightFlush[-1].value == 14:
                     rank = 1
 
-                #straight flush
+                # straight flush
                 else:
                     rank = 2
 
-                return rank,straightFlush[:-6:-1],kickers
+                return rank, straightFlush[:-6:-1], kickers
 
-
-        #group cards of same rank, save to dictionary key = amount of same cards, value= array of card group arrays {2: [[2H,2C],[3H,3C]]}
+        # group cards of same rank, save to dictionary key = amount of same cards, value= array of card group arrays {2: [[2H,2C],[3H,3C]]}
 
         ofKind = {}
 
-        rankGroups = (list(group) for rank,group in itertools.groupby(cards, Card.getValue))
+        rankGroups = (
+            list(group) for rank, group in itertools.groupby(cards, Card.getValue)
+        )
 
         for group in rankGroups:
             if len(group) > 1:
@@ -875,42 +1000,42 @@ class Poker:
         pairs = None
 
         if ofKind:
-            #four of a kind
+            # four of a kind
             if 4 in ofKind:
                 fourKind = ofKind[4][0]
-                kicker = [findKickers(fourKind,1)[0]]
+                kicker = [findKickers(fourKind, 1)[0]]
                 rank = 3
-                return rank,fourKind,kicker
+                return rank, fourKind, kicker
 
-            #fullhouse
+            # fullhouse
             elif 3 in ofKind:
                 threeKind = ofKind[3][-1]
                 if 2 in ofKind:
                     rank = 4
                     hand = threeKind
                     hand.extend(ofKind[2][-1])
-                    return rank, hand,kickers
+                    return rank, hand, kickers
 
-                #three of a kind
+                # three of a kind
                 elif not rank:
                     rank = 7
 
-            if not rank and 2 in ofKind :
-                #two pair
+            if not rank and 2 in ofKind:
+                # two pair
                 pairs = ofKind[2]
                 if len(pairs) >= 2:
                     rank = 8
-                #pair
+                # pair
                 else:
                     rank = 9
 
-        #find cards of same suit
+        # find cards of same suit
         suitDict = {}
 
         for card in cards:
-            suitDict.setdefault(card.suit,[]).append(card)
+            suitDict.setdefault(card.suit, []).append(card)
 
-        flush = [group for group in suitDict.values() if len(group)>= 5]
+        flush = [group for group in suitDict.values() if len(group) >= 5]
 
         if flush:
             hand = flush[0]
@@ -918,29 +1043,33 @@ class Poker:
                 hand = hand[:-6:-1]
             rank = 5
 
-        #straight
+        # straight
         elif rank == 6:
-            #to stop the same rank appearing twice in a hand. Could redefine equality but equality is defined as it should be
-            hand = [straight[i-1] for i in range(len(straight),0,-1) if i==len(straight) or straight[i].value != straight[i-1].value]
+            # to stop the same rank appearing twice in a hand. Could redefine equality but equality is defined as it should be
+            hand = [
+                straight[i - 1]
+                for i in range(len(straight), 0, -1)
+                if i == len(straight) or straight[i].value != straight[i - 1].value
+            ]
             hand = hand[:5]
 
-        #three of a kind
+        # three of a kind
         elif rank == 7:
             hand = threeKind
-            kickers = findKickers(hand,2)
+            kickers = findKickers(hand, 2)
 
-        #two pair
+        # two pair
         elif rank == 8:
             hand = pairs[-1]
             hand.extend(pairs[-2])
-            kickers = findKickers(hand,1)
+            kickers = findKickers(hand, 1)
 
-        #pair
+        # pair
         elif rank == 9:
             hand = pairs[0]
-            kickers = findKickers(pairs[0],3)
+            kickers = findKickers(pairs[0], 3)
 
-        #high card
+        # high card
         else:
             rank = 10
             hand = [cards[-1]]
@@ -948,11 +1077,11 @@ class Poker:
 
         return rank, hand, kickers
 
-    def mergeSort(self, arr, key=lambda x:x,decending=False):
+    def mergeSort(self, arr, key=lambda x: x, decending=False):
         if decending:
-            comp = lambda x,y : x >= y
+            comp = lambda x, y: x >= y
         else:
-            comp = lambda x,y : x<=y
+            comp = lambda x, y: x <= y
         i = 0
         j = 0
         k = 0
@@ -961,12 +1090,12 @@ class Poker:
             pivot = n // 2
             left = arr[:pivot]
             right = arr[pivot:]
-            self.mergeSort(left,key,decending)
-            self.mergeSort(right,key,decending)
+            self.mergeSort(left, key, decending)
+            self.mergeSort(right, key, decending)
             nleft = len(left)
             nright = len(right)
             while i < nleft and j < nright:
-                if comp(key(left[i]),key(right[j])):
+                if comp(key(left[i]), key(right[j])):
                     arr[k] = left[i]
                     i += 1
                 else:
@@ -983,31 +1112,7 @@ class Poker:
                 j += 1
                 k += 1
             return arr
-
-
-# PlayersInGame = []
-# Me = Player("me")
-# Myself = Player("myself")
-# I = Player("I")
-# Renee = Player("Renee")
-# Myself.money = 200
-# I.money = 20
-# Renee.money = 270
-# PlayersInGame.append(Me)
-# PlayersInGame.append(Myself)
-# PlayersInGame.append(I)
-# PlayersInGame.append(Renee)
-# I's hand > 5 of Spades, 5 of Clubs, 5 of Hearts, 5 of Diamonds, King of Clubs
-# Renee's hand > 5 of Hearts, 5 of Clubs, 5 of Hearts, 5 of Diamonds, King of Clubs
-# print(game.findWinner(PlayersInGame))
-# print(game.getHandRank( game.mergeSort([Card(rank,"Clubs") for rank in list(Card.RANK)[:5]] + [Card("Ace","Clubs")] +[Card("Ace","Diamonds")] ,Card.getValue)))# + [Card(rank,"Clubs") for rank in list(Card.RANK)[6:7]] + [Card("10","Diamonds")] + [Card("7","Diamonds")],Card.getValue)))
-# print(NewHand.community)
-# for j in range(len(PlayersInGame)):
-#     MyFile = open(PlayersInGame[j-1].name + ".txt", "w+")
-#     card1 = PlayersInGame[j-1].hole[0].split(",")
-#     card2 = PlayersInGame[j-1].hole[1].split(",")
-#     MyFile.write(card1[0] + " of " + card2[1] + "\n")
-#     MyFile.write(card2[0] + " of " + card2[1] + "\n")
+        
 
 if __name__ == "__main__":
     game = Poker()
