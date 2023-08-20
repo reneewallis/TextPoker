@@ -841,14 +841,14 @@ class Poker:
         ]
 
         if len(winners) >= 2:
-            winners = Poker.findBiggestHand(
+            winners = self.findBiggestHand(
                 winners,
                 lambda i: lambda x: x.getCardHand(i).value,
                 len(winners[0].hand),
             )
 
             if len(winners) > 1 and winners[0].kickers:
-                winners = Poker.findBiggestHand(
+                winners = self.findBiggestHand(
                     winners,
                     lambda i: lambda x: x.getKicker(i).value,
                     len(winners[0].kickers),
@@ -856,13 +856,13 @@ class Poker:
 
         return winners
 
-    @staticmethod
-    def findBiggestHand(players, closuredGetFunc, handLength):
+    def findBiggestHand(self, players, closuredGetFunc, handLength):
         for i in range(handLength):
             getCard = closuredGetFunc(i)
             biggest = max(players, key=getCard)
+            biggestCard = getCard(biggest)
             players = [
-                player for player in players if getCard(player) == getCard(biggest)
+                player for player in players if getCard(player) == biggestCard
             ]
             if len(players) == 1:
                 break
@@ -940,11 +940,11 @@ class Poker:
     # returns rank, [cardsInHand], [kicker(s)] > first card is highest
     def getHandRank(self, cards):
         values = [card.value for card in cards]
-        findKickers = lambda x, amount: [card for card in cards if card not in x][
-            : -amount - 1 : -1
-        ]
+        findKickers = lambda x, amount: [card for card in cards if card not in x][:-amount-1:-1]
         rank = None
         kickers = None
+        hand = None
+        aceLow = False
         straightStart, straightEnd = self.checkStraight(values)
 
         # straight
@@ -955,12 +955,13 @@ class Poker:
             # get array of straight cards, reorder if ace low
             if straightStart == -1:
                 straightStart = 0
-                if straightEnd == 3:
-                    # boundary is 3 Aces and a straight high 5 [2H,3H,4H,5H,AH,AC,AS]
+                #if the straight high is 5
+                if cards[straightEnd].value == 5:
                     straight = []
                     i = 6
-                    while i >= 4 and cards[i].value == 14:
+                    while i >= 4 and cards[i].value == 14:  # boundary is 3 Aces and a straight high 5 [2H,3H,4H,5H,AH,AC,AS]
                         cards[i].value = 1
+                        acelow = True
                         straight.append(cards[i])
                         i -= 1
 
@@ -968,7 +969,7 @@ class Poker:
                         straight.append(cards[i])
 
             if not straight:
-                straight = cards[straightStart : straightEnd + 1]
+                straight = cards[straightStart:straightEnd + 1]
 
             straightFlush = self.checkStraightFlush(straight)
 
@@ -988,9 +989,7 @@ class Poker:
 
         ofKind = {}
 
-        rankGroups = (
-            list(group) for rank, group in itertools.groupby(cards, Card.getValue)
-        )
+        rankGroups = (list(group) for rank, group in itertools.groupby(cards, Card.getValue))
 
         for group in rankGroups:
             if len(group) > 1:
@@ -1002,10 +1001,11 @@ class Poker:
         if ofKind:
             # four of a kind
             if 4 in ofKind:
-                fourKind = ofKind[4][0]
-                kicker = [findKickers(fourKind, 1)[0]]
+                hand = ofKind[4][0]
+                kicker = [findKickers(hand, 1)[0]]
                 rank = 3
-                return rank, fourKind, kicker
+
+                return rank, hand, kicker
 
             # fullhouse
             elif 3 in ofKind:
@@ -1046,11 +1046,7 @@ class Poker:
         # straight
         elif rank == 6:
             # to stop the same rank appearing twice in a hand. Could redefine equality but equality is defined as it should be
-            hand = [
-                straight[i - 1]
-                for i in range(len(straight), 0, -1)
-                if i == len(straight) or straight[i].value != straight[i - 1].value
-            ]
+            hand = [straight[i - 1] for i in range(len(straight), 0, -1) if i == len(straight) or straight[i].value != straight[i - 1].value]
             hand = hand[:5]
 
         # three of a kind
@@ -1070,10 +1066,19 @@ class Poker:
             kickers = findKickers(pairs[0], 3)
 
         # high card
-        else:
+        elif not rank:
             rank = 10
             hand = [cards[-1]]
             kickers = cards[-2:-6:-1]
+
+        #set ace value back to 14
+        if aceLow and rank < 6:
+            i = 0
+            card = straight[0]
+            while card.value == 1:
+                card.value = 14
+                i+=1
+                card = straight[i]
 
         return rank, hand, kickers
 
@@ -1112,7 +1117,6 @@ class Poker:
                 j += 1
                 k += 1
             return arr
-        
 
 if __name__ == "__main__":
     game = Poker()
