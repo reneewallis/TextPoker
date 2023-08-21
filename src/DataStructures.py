@@ -175,4 +175,4 @@ class CircularLinkedList:
         return False
 
     def __repr__(self):
-        return self.getList()
+        return ", ".join(self.getList())
