@@ -36,10 +36,10 @@ class Card:
         return self.suit
 
     def __repr__(self):
-        return self.rank + " of " + self.suit
+        return f"{self.rank} of {self.suit}"
 
     def __str__(self):
-        return self.rank + " of " + self.suit
+        return f"{self.rank} of {self.suit}"
 
     def __eq__(self, other):
         return isinstance(other, Card) and (
@@ -174,49 +174,34 @@ class Player:
         else:
             stringRaiseOrBet = "bet"
 
-        StringFormatting.printWithSeperators(
-            "type back at any time if you no longer want to " + stringRaiseOrBet, "*"
-        )
+        StringFormatting.printWithSeperators(f"type back at any time if you no longer want to {stringRaiseOrBet}", "*")
+
         while not raisedBet:
             if raising:
                 print("enter the amount you would like to raise to")
-            amount = input(
-                "how much would you like to " + stringRaiseOrBet + " "
-            ).strip()
+            amount = input(f"how much would you like to {stringRaiseOrBet} ").strip()
 
             if amount == "back":
                 break
             try:
                 amount = int(amount)
                 if amount < 0:
-                    print("You cannot " + stringRaiseOrBet + " a negative amount!")
+                    print(f"You cannot {stringRaiseOrBet} a negative amount!")
                     continue
 
                 elif amount < stake + (2 * lastRaise):
                     print(
-                        "You must raise by a minimum of double the last raise or bet (min "
-                        + str(2 * lastRaise)
-                        + " chips) which takes the bet to "
-                        + str(stake + (2 * lastRaise))
-                        + " chips"
+                        f"You must raise by a minimum of double the last raise or bet (min {2 * lastRaise} chips) which takes the bet to {stake + (2 * lastRaise)} chips"
                     )
 
                 elif amount < minBet:
                     print(
-                        "You cannot "
-                        + stringRaiseOrBet
-                        + " less than the minimum bet which is "
-                        + str(minBet)
-                        + " chips"
+                        f"You cannot {stringRaiseOrBet} less than the minimum bet which is {minBet} chips"
                     )
 
                 elif raising and amount == stake:
                     print(
-                        "You must raise by at least "
-                        + str(max(minBet, (2 * lastRaise)))
-                        + " which takes the bet to "
-                        + str(stake + max(minBet, (2 * lastRaise)))
-                        + " chips"
+                        f"You must raise by at least {max(minBet, (2 * lastRaise))} which takes the bet to {stake + max(minBet, (2 * lastRaise))} chips"
                     )
 
                 else:
@@ -243,21 +228,14 @@ class Player:
         played = False
         total = 0
         raisedBet = None
-        infoString = (
-            self.name
-            + "'s chips: "
-            + str(self.money)
-            + "\npot contribution: "
-            + str(self.totalPotContrib)
-            + "\ntables bet: "
-            + str(stake)
-            + "\nyour current bet: "
-            + str(self.currentBet)
-        )
+        infoString = (f"{self.name}\'s chips: {self.money}"
+                      f"\npot contribution: {self.totalPotContrib}"
+                      f"\ntables bet: {stake}"
+                      f"\nyour current bet: {self.currentBet}")
         while not played:
             StringFormatting.printWithSeperators(infoString, "*")
             choice = (
-                input(self.name + " would you like to: " + ", ".join(valid) + " ")
+                input(f"{self.name} would you like to: {', '.join(valid)} ")
                 .lower()
                 .strip()
             )
@@ -266,7 +244,7 @@ class Player:
                 if choice == "raise":
                     raisedBet, total = self.validateRaiseBet(minBet, lastRaise, stake)
 
-                    print("raised by " + str(raisedBet))
+                    print(f"raised by {raisedBet}")
 
                 elif choice == "bet":
                     raisedBet, total = self.validateRaiseBet(
@@ -371,11 +349,11 @@ class Poker:
 
     def addPlayer(self, player):
         self.players.append(player)
-        print("Hello " + player.name)
+        print(f"Hello {player.name}")
 
     def removePlayer(self, player):
         self.players.remove(player)
-        print(player.name + " is out!")
+        print(f"{player.name} is out!")
         try:
             os.remove(os.path.join(PLAYER_DIR, player.name + ".txt"))
 
@@ -399,16 +377,13 @@ class Poker:
                 numberOfPlayers = int(
                     input("How many players will be playing in total? ").strip()
                 )
-                if numberOfPlayers < 2:
-                    print("You need at least 2 players to play poker!")
-                if numberOfPlayers > 6:
-                    print("There are only 6 seats available in Text Poker!")
+
                 if numberOfPlayers < len(self.players):
-                    print(
-                        "There are "
-                        + str(len(self.players))
-                        + " players currently, include the current players in the total"
-                    )
+                    print(f"There are {len(self.players)} players currently, include the current players in the total")
+                elif numberOfPlayers < 2:
+                    print("You need at least 2 players to play poker!")
+                elif numberOfPlayers > 6:
+                    print("There are only 6 seats available in Text Poker!")
 
             except ValueError:
                 print("I'm sorry, you didn't enter a number!")
@@ -446,9 +421,7 @@ class Poker:
                     print("The big blind must cost some amount of chips!")
                 elif self.minBet > maxBet:
                     print(
-                        "Some of the players don't have enough money for that! Try anything below "
-                        + str(maxBet)
-                        + " chips"
+                        f"Some of the players don't have enough money for that! Try anything below {maxBet} chips"
                     )
             except ValueError:
                 print("I'm sorry, you didn't enter a number!")
@@ -533,24 +506,26 @@ class Poker:
             button = self.activePlayers.tail
             smallBlind = button.next
             bigBlind = smallBlind.next
-            currentPot = Pot(0, self.players)
-            self.pots.enqueue(currentPot)
+            currentPot = None
 
-            print("button: " + button.data.name)
-            print("big blind: " + bigBlind.data.name)
-            print("small blind: " + smallBlind.data.name)
+
+            StringFormatting.printWithSeperators((f"button: {button.data.name}"
+                                                 f"\nbig blind: {bigBlind.data.name}"
+                                                 f"\nsmall blind: {smallBlind.data.name}"),"~")
 
             bigBlind.data.raiseOrBet(self.minBet)
             smallBlind.data.raiseOrBet(self.minBet // 2)
 
             if bigBlind.data.isAllIn:
-                print(bigBlind.data.name + " is all in")
+                print(f"{bigBlind.data.name} is all in")
 
             if smallBlind.data.isAllIn:
-                print(smallBlind.data.name + " is all in")
+                print(f"{smallBlind.data.name} is all in")
 
-            print("Betting Starting....")
-            time.sleep(1)
+            time.sleep(1.5)
+
+            print("Betting Starting....\n")
+            time.sleep(0.5)
 
             for i in range(4):
                 if self.activePlayers.length == 1:
@@ -558,18 +533,21 @@ class Poker:
 
                 if self.phase == 1:
                     self.bettingRound(bigBlind.next, self.minBet)
-                    nextPot = currentPot.addChipsToPot()
+                    currentPot = Pot(0, self.activePlayers.getList())
+                    self.pots.enqueue(currentPot)
+
 
                 else:
                     self.bettingRound()
-                    nextPot = currentPot.addChipsToPot()
+
+                nextPot = currentPot.addChipsToPot()
 
                 while nextPot:
                     currentPot = nextPot
                     self.pots.enqueue(currentPot)
                     nextPot = nextPot.addChipsToPot()
 
-                if self.phase < 5:
+                if self.activePlayers.length > 1 and self.phase < 5:
                     turnedCards.append(self.community[self.phase])
                     communityString = ", ".join([str(card) for card in turnedCards])
                     StringFormatting.printPaddedInBox(communityString, "=")
@@ -606,7 +584,7 @@ class Poker:
                         if player in activePlayersSet
                     ]
                     potName = (
-                        "Main Pot" if potNumber == 0 else "Side Pot " + str(potNumber)
+                        "Main Pot" if potNumber == 0 else f"Side Pot {potNumber}"
                     )
 
                     if len(playersInPot) == 1:
@@ -615,13 +593,9 @@ class Poker:
                     else:
 
                         winners = self.findWinner(playersInPot, HandFound)
-                        text = (
-                            "~"
-                            + potName
-                            + "~"
-                            + "\nWinning Hand: "
-                            + Poker.HAND_RANKS[winners[0].handRank]
-                        )
+                        text = (f"~{potName}~"
+                                f"\nWinning Hand: {Poker.HAND_RANKS[winners[0].handRank]}"
+                                )
                         StringFormatting.printInFancyBox(text, 10)
 
                         potNumber += 1
@@ -632,43 +606,26 @@ class Poker:
                         if len(winners) == 1:
                             self.printPlayersHand(winners[0])
                             winners[0].money += currentPot.total
-                            print(
-                                winners[0].name
-                                + " wins "
-                                + str(currentPot.total)
-                                + " chips!"
-                            )
+                            print(f"{winners[0].name} wins {currentPot.total} chips!")
 
                         else:
                             split, extraChipsAwardee, extraChips = self.splitPot(winners, currentPot.total)
 
-                            print(
-                                "pot split "
-                                + str(len(winners))
-                                + " ways for a win of "
-                                + str(split)
-                                + " chips each"
-                            )
+                            print(f"pot split {len(winners)} ways for a win of {split} chips each")
+
                             print("winning hands:")
                             for winner in winners:
                                 self.printPlayersHand(winner)
 
                             if extraChipsAwardee:
-                                print(
-                                    "\nWith "
-                                    + str(extraChips)
-                                    + " extra chips awarded to the player to the left of the dealer, "
-                                    + str(extraChipsAwardee.name)
-                                )
+                                print(f"\nWith {extraChips} extra chips awarded to the player to the left of the dealer, {extraChipsAwardee.name}")
                         time.sleep(2)
 
                 if lastPotValue:
                     StringFormatting.printInFancyBox(
-                        "~" + potName + "~" + "\nOne Player Left In Pot"
+                        f"~{potName}~\nOne Player Left In Pot"
                     )
-                    print(
-                        playersInPot[0].name + " wins " + str(lastPotValue) + " chips"
-                    )
+                    print(f"{playersInPot[0].name} wins {lastPotValue} chips")
                     playersInPot[0].money += lastPotValue
 
             else:
@@ -680,13 +637,13 @@ class Poker:
                 player = self.activePlayers.head.data
                 player.money += total
                 StringFormatting.printInFancyBox("~Main Pot~", 10)
-                print(player.name + " wins " + str(total) + " chips!")
+                print(f"{player.name} wins {total} chips!")
 
             self.rotateBlinds()
             print("~~~~~~~~~~~~~~~~~~~~")
             print("Round ended")
 
-            if len(self.players) < 6:
+            if self.checkActivePlayers() and len(self.players) < 6:
                 answer = None
 
                 while not (answer == "y" or answer == "n"):
@@ -698,21 +655,21 @@ class Poker:
 
                 if answer == "y":
                     self.getNewPlayers()
-                    print("players added...")
+                    print("\nplayers added...")
                     time.sleep(0.5)
-            print("Starting new round...")
+            print("Starting new round...\n")
             time.sleep(1)
 
         winner = self.players[0]
         StringFormatting.printInFancyBox(
-            winner.name + " wins the game with " + str(winner.money) + " chips!"
+            f"{winner.name} wins the game with {winner.money} chips!"
         )
 
     def printPlayersHand(self, player):
-        print(player.name + "'s hand > ", end="")
+        print(f"{player.name}\'s hand > ", end="")
         print(", ".join([str(card) for card in player.hand]), end="")
         if player.kickers:
-            print(", " + ", ".join([str(card) for card in player.kickers]))
+            print(", ", ", ".join([str(card) for card in player.kickers]))
         else:
             print("\n", end="")
 
@@ -770,17 +727,9 @@ class Poker:
 
         firstNodeCanPlay = firstNotAllIn(nodeToStart)
 
-        while (
-            self.activePlayers.length > 1
-            and (
-                multiplePlayersCanPlay(firstNodeCanPlay)
-                or playerNotMetBet(player, stake)
-            )
-            and (
-                start
-                or playerNotMetBet(player, stake)
-                or (notFinishedLoop(node) and (betNotChanged(stake) or player.isAllIn))
-            )
+        while (self.activePlayers.length > 1
+               and (multiplePlayersCanPlay(firstNodeCanPlay) or playerNotMetBet(player, stake))
+               and (start or playerNotMetBet(player, stake) or (notFinishedLoop(node) and (betNotChanged(stake) or player.isAllIn)))
         ):
 
             if not player.isAllIn:
@@ -791,14 +740,18 @@ class Poker:
                     nodeToStart = node
                     firstNodeCanPlay = firstNotAllIn(nodeToStart)
 
+                elif player.isAllIn:
+                    firstNodeCanPlay = firstNotAllIn(nodeToStart)
+
                 elif player.folded or player.currentBet == -1:
                     self.activePlayers.deleteNode(player)
                     if node == nodeToStart:
                         nodeToStart = nodeToStart.next
 
                     if player.currentBet == -1:
-                        print("hi")
                         self.removePlayer(player)
+
+
 
             if start and not (player.folded or player.currentBet == -1):
                 start = False
@@ -815,7 +768,6 @@ class Poker:
                 player.currentBet = 0
                 node = node.next
                 player = node.data
-                print(player)
                 if node == self.activePlayers.head:
                     break
 
