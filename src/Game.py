@@ -365,33 +365,45 @@ class Poker:
 
         if getNew and len(self.players) < 6:
             playerCheck = lambda x: x <= len(self.players)
+            print("Type back at any time if you already have enough players and no longer want to add more to add more")
         else:
             playerCheck = lambda x: x < len(self.players)
 
-        numberOfPlayers = len(self.players)
+        playerLen = len(self.players)
+        numberOfPlayers = playerLen
+        valid = False
+
+        if playerLen >= 2 and playerLen <= 6:
+            valid = True
 
         while (
-            numberOfPlayers < 2 or numberOfPlayers > 6 or playerCheck(numberOfPlayers)
+            numberOfPlayers< 2 or numberOfPlayers > 6 or playerCheck(numberOfPlayers)
         ):
             try:
-                numberOfPlayers = int(
-                    input("How many players will be playing in total? ").strip()
-                )
+                answer = input("How many players would you like to add? ").strip().lower()
+                numberOfPlayers= int(answer) + playerLen
 
-                if numberOfPlayers < len(self.players):
-                    print(f"There are {len(self.players)} players currently, include the current players in the total")
+                if numberOfPlayers-playerLen == 0 and getNew:
+                    print("You must type back if you don't want to add any new players!")
                 elif numberOfPlayers < 2:
                     print("You need at least 2 players to play poker!")
                 elif numberOfPlayers > 6:
                     print("There are only 6 seats available in Text Poker!")
 
             except ValueError:
-                print("I'm sorry, you didn't enter a number!")
+                if answer == "back":
+                    if valid:
+                        print("returning...")
+                        return False
+                    else:
+                        print(f"I'm sorry but you don't have enough players to continue! Please fill between {2-playerLen} and {6-playerLen} more seats!")
+                else:
+                    print("I'm sorry, you didn't enter a number!")
 
         # if players need to be created
-        if len(self.players) != numberOfPlayers:
+        if not (numberOfPlayers is playerLen):
             playerNames = {player.name for player in self.players}
-            for _ in range(len(self.players), numberOfPlayers):
+            for _ in range(playerLen, numberOfPlayers):
                 valid = False
                 while not valid:
                     playerName = input("Enter a Player Name: ").strip()
@@ -401,6 +413,10 @@ class Poker:
                         valid = True
                         playerNames.add(playerName)
                         self.addPlayer(Player(playerName))
+
+            return True
+
+        return False
 
     def initiate(self):
         StringFormatting.printInFancyBox("Welcome to Text Poker!")
@@ -648,14 +664,17 @@ class Poker:
 
                 while not (answer == "y" or answer == "n"):
                     answer = (
-                        input("would you like to add more players y/n ").lower().strip()
+                        input("Would you like to add more players y/n ").lower().strip()
                     )
                     if not (answer == "y" or answer == "n"):
                         print("Invalid input, type y/n")
 
                 if answer == "y":
-                    self.getNewPlayers()
-                    print("\nplayers added...")
+                    if self.getNewPlayers():
+                        print("\nPlayers added...")
+
+                    else:
+                        print("\nNo players added...")
                     time.sleep(0.5)
             print("Starting new round...\n")
             time.sleep(1)
